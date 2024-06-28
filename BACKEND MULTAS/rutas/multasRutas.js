@@ -26,7 +26,7 @@ rutas.post('/crear', async (req, res) => {
         multa: req.body.multa,
         error: req.body.error,
         usuario: req.body.usuario // asignar el id del usuario
-    })
+    });
     try {
         const nuevaMulta = await multa.save();
         res.status(201).json(nuevaMulta);
@@ -46,7 +46,7 @@ rutas.put('/editar/:id', async (req, res) => {
             return res.status(201).json(multaEditada);
 
     } catch (error) {
-        res.status(400).json({ mensaje :  error.message})
+        res.status(400).json({ mensaje :  error.message});
     }
 });
 
@@ -61,7 +61,7 @@ rutas.delete('/eliminar/:id',async (req, res) => {
             return res.json({mensaje :  'Multa eliminada'});    
        } 
     catch (error) {
-        res.status(500).json({ mensaje :  error.message})
+        res.status(500).json({ mensaje :  error.message});
     }
 });
 
@@ -69,13 +69,13 @@ rutas.delete('/eliminar/:id',async (req, res) => {
 
 rutas.get('/multa/:id', async (req, res) => {
     try {
-        const multa = await multaEditadaModel.findById(req.params.id);
+        const multa = await multaModel.findById(req.params.id);
         if (!multa)
             return res.status(404).json({ mensaje : 'multa no encontrada!!!'});
         else 
             return res.json(multa);
     } catch(error) {
-        res.status(500).json({ mensaje :  error.message})
+        res.status(500).json({ mensaje :  error.message});
     }
 });
 
@@ -86,7 +86,7 @@ rutas.get('/totalmultas', async (req, res) => {
         const total = await multaModel.countDocuments();
         return res.json({totalmulta: total });
     } catch(error) {
-        res.status(500).json({ mensaje :  error.message})
+        res.status(500).json({ mensaje :  error.message});
     }
 });
 
@@ -95,56 +95,39 @@ rutas.get('/totalmultas', async (req, res) => {
 
 rutas.get('/ordenarmultas', async (req, res) => {
     try {
-       const multasOrdenadas = await multasModel.find().sort({ nombre: -1});
-       res.status(200).json(multasOrdenadas);
+       const multaOrdenadas = await multaModel.find().sort({ nombre: -1});
+       res.status(200).json(multaOrdenadas);
     } catch(error) {
-        res.status(500).json({ mensaje :  error.message})
+        res.status(500).json({ mensaje :  error.message});
     }
 });
 
-//REPORTES 1
-//rutas.get('/recetaPorUsuario/:usuarioId', async (peticion, respuesta) =>{
-  //  const {usuarioId} = peticion.params;
-    //console.log(usuarioId);
-    //try{
-      //  const usuario = await UsuarioModel.findById(usuarioId);
-       // if (!usuario)
-         //   return respuesta.status(404).json({mensaje: 'usuario no encontrado'});
-        //const recetas = await RecetaModel.find({ usuario: usuarioId}).populate('usuario');
-        //respuesta.json(recetas);
+//REPORTE 1 para obtener todas las multas de un usuario específico con si Id
 
-    //} catch(error){
-      //  respuesta.status(500).json({ mensaje :  error.message})
-   // }
-//})
+rutas.get('/multasusuario/:usuarioId', async (req, res) => {
+    try {
+        const multasUsuario = await multaModel.find({ usuario: req.params.usuarioId });
+        if (multasUsuario.length === 0) {
+            return res.status(404).json({ mensaje: 'No se encontraron multas para este usuario' });
+        }
+        res.json(multasUsuario);
+    } catch (error) {
+        res.status(500).json({ mensaje: error.message });
+    }
+});
+     
+//REPORTE 2 para obtener todas las multas con un tipo específico de error
 
-//REPORTES 2
-//sumar porciones de recetas por Usuarios
-//rutas.get('/porcionPorUsuario', async (req, res) => {
- //   try {   
-   //     const usuarios = await UsuarioModel.find();
-     //   const reporte = await Promise.all(
-       //     usuarios.map( async ( usuario1 ) => {
-         //       const recetas = await RecetaModel.find({ usuario: usuario1._id});
-           //     const totalPorciones = recetas.reduce((sum, receta) => sum + receta.porciones, 0);
-             //   return {
-               //     usuario: {
-                 //       _id: usuario1._id,
-                   //     nombreusuario: usuario1.nombreusuario
-                    //},
-                    //totalPorciones,
-                    //recetas: recetas.map( r => ( {
-                       // _id: r._id,
-                       // nombre: r.nombre,
-                        //porciones: r.porciones
-                    //}))
-                //}
-           // } )
-        //)
-        //res.json(reporte);
-  //  } catch (error){
-    //    res.status(500).json({ mensaje :  error.message})
-    //}
-//})
-
+rutas.get('/multasconerror/:tipoError', async (req, res) => {
+    try {
+        const multasConError = await multaModel.find({ error: req.params.tipoError });
+        if (multasConError.length === 0) {
+            return res.status(404).json({ mensaje: 'No se encontraron multas con este tipo de error' });
+        }
+        res.json(multasConError);
+    } catch (error) {
+        res.status(500).json({ mensaje: error.message });
+    }
+});
+             
  module.exports = rutas;
